@@ -1,0 +1,46 @@
+# KernelGuard - one command: `docker compose up --build`
+# The sandbox-* services only exist to BUILD the language images (they exit immediately); jobs run as throw-away
+# containers started by the backend through the Docker API.
+x-sandbox-build: &sb
+  command: ["true"]
+services:
+  sandbox-c:      { build: { context: ./sandbox, dockerfile: c/Dockerfile },      image: hcs-sandbox-c,      <<: *sb }
+  sandbox-cpp:    { build: { context: ./sandbox, dockerfile: cpp/Dockerfile },    image: hcs-sandbox-cpp,    <<: *sb }
+  sandbox-python: { build: { context: ./sandbox, dockerfile: python/Dockerfile }, image: hcs-sandbox-python, <<: *sb }
+  sandbox-java:   { build: { context: ./sandbox, dockerfile: java/Dockerfile },   image: hcs-sandbox-java,   <<: *sb }
+  backend:
+    build: { context: ., dockerfile: backend/Dockerfile }
+    ports: ["8000:8000"]
+    environment:                    # values come from .env (see .env.example) when present
+      DB_PATH: /data/sandbox.db
+      AI_PROVIDER: ${AI_PROVIDER:-}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-}
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      AI_TIMEOUT_SECONDS: ${AI_TIMEOUT_SECONDS:-25}
+      AI_AUTO_EXPLAIN: ${AI_AUTO_EXPLAIN:-1}
+      MAX_ACTIVE_JOBS: ${MAX_ACTIVE_JOBS:-2}
+      MAX_PENDING_JOBS: ${MAX_PENDING_JOBS:-4}
+      HOST_CPU_BUDGET: ${HOST_CPU_BUDGET:-}
+      HOST_MEM_BUDGET_MB: ${HOST_MEM_BUDGET_MB:-}
+      MONITOR_STALE_SECONDS: ${MONITOR_STALE_SECONDS:-4}
+      MONITOR_RESTARTS: ${MONITOR_RESTARTS:-1}
+      CHALLENGES_ENABLED: ${CHALLENGES_ENABLED:-1}
+      FAULT_INJECTION_ALLOWED: ${FAULT_INJECTION_ALLOWED:-1}
+    volumes:
+      # The Docker socket goes ONLY to this trusted backend - never into a sandbox container.
+      - /var/run/docker.sock:/var/run/docker.sock
+      - sandbox-data:/data
+    depends_on:
+      sandbox-c:      { condition: service_completed_successfully }
+      sandbox-cpp:    { condition: service_completed_successfully }
+      sandbox-python: { condition: service_completed_successfully }
+      sandbox-java:   { condition: service_completed_successfully }
+    restart: unless-stopped
+  frontend:
+    build: ./frontend
+    ports: ["3000:80"]
+    depends_on: [backend]
+    restart: unless-stopped
+volumes:
+  sandbox-data:

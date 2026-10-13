@@ -1,0 +1,20 @@
+[
+ {"id":"c-normal","name":"Normal program","language":"c","dir":"c","files":["normal_success.c"],"profile":"standard","expect":"COMPLETED","description":"Prints a sum and exits 0."},
+ {"id":"c-multi-file","name":"Multi-file project","language":"c","dir":"c/project_multi_file","files":["main.c","mathutil.c","mathutil.h"],"profile":"standard","expect":"COMPLETED","description":"One main() plus helper sources - compiled together."},
+ {"id":"c-two-programs","name":"Two independent programs","language":"c","dir":"c/project_two_programs","files":["hello_tool.c","sum_tool.c","greet.c","greet.h"],"profile":"standard","expect":"Entry-point selection","description":"Two main() files: you choose which program to build; only its dependencies are linked."},
+ {"id":"c-cpu","name":"CPU stress","language":"c","dir":"c","files":["cpu_stress.c"],"profile":"safe","expect":"COMPLETED + CPU_LIMIT (throttled)","description":"Busy for ~8 s; on SAFE the CFS quota throttles it."},
+ {"id":"c-memory","name":"Memory exhaustion","language":"c","dir":"c","files":["memory_test.c"],"profile":"safe","expect":"TERMINATED - MEMORY LIMIT","description":"Allocates up to 1 GB; the kernel OOM killer ends it on SAFE."},
+ {"id":"c-timeout","name":"Infinite loop","language":"c","dir":"c","files":["timeout_test.c"],"profile":"safe","expect":"TERMINATED - TIME LIMIT","description":"Never exits; the watchdog terminates it at the runtime budget."},
+ {"id":"c-process","name":"Process creation (30 children)","language":"c","dir":"c","files":["process_test.c"],"profile":"safe","expect":"RUNTIME ERROR + PROCESS_LIMIT (denied)","description":"Forks 30 sleepers; with 20 PIDs the kernel refuses some forks."},
+ {"id":"c-multi-violation","name":"Multiple violations","language":"c","dir":"c","files":["multi_violation.c"],"profile":"safe","expect":"TERMINATED - TIME LIMIT with PROCESS_LIMIT + CPU_LIMIT","description":"Hits the PID cap, then spins until the deadline: several violations in one run."},
+ {"id":"c-seccomp","name":"Forbidden syscall","language":"c","dir":"c","files":["seccomp_test.c"],"profile":"standard","expect":"TERMINATED - SECURITY POLICY","description":"Calls ptrace(); the seccomp filter kills it."},
+ {"id":"c-flood","name":"Output flood","language":"c","dir":"c","files":["output_flood.c"],"profile":"standard","expect":"TERMINATED - OUTPUT LIMIT","description":"Prints forever; output is capped."},
+ {"id":"c-compile-error","name":"Compilation error","language":"c","dir":"c","files":["compile_error.c"],"profile":"standard","expect":"COMPILATION FAILED","description":"Does not compile."},
+ {"id":"c-crash","name":"Runtime error (segfault)","language":"c","dir":"c","files":["runtime_error.c"],"profile":"standard","expect":"RUNTIME ERROR","description":"Dereferences NULL."},
+ {"id":"cpp-forkbomb","name":"Fork bomb (unbounded)","language":"cpp","dir":"cpp","files":["fork_bomb.cpp"],"profile":"safe","expect":"TERMINATED - TIME LIMIT + PROCESS_LIMIT + CPU_LIMIT","description":"A real fork bomb. The pids cgroup caps it; the watchdog ends it."},
+ {"id":"cpp-hello","name":"C++ hello","language":"cpp","dir":"cpp","files":["hello.cpp"],"profile":"standard","expect":"COMPLETED","description":"Minimal C++17 program."},
+ {"id":"py-hello","name":"Python hello","language":"python","dir":"python","files":["hello.py"],"profile":"standard","expect":"COMPLETED","description":"Shows the non-root user and blocked file access."},
+ {"id":"py-memory","name":"Python memory hog","language":"python","dir":"python","files":["memory_hog.py"],"profile":"safe","expect":"TERMINATED - MEMORY LIMIT","description":"Allocates 50 MB steps until the OOM killer fires."},
+ {"id":"java-hello","name":"Java hello","language":"java","dir":"java","files":["Main.java"],"profile":"standard","expect":"COMPLETED","description":"Use STANDARD or HIGH; the JVM needs many threads."},
+ {"id":"java-project","name":"Java multi-file project","language":"java","dir":"java/project","files":["Main.java","Greeter.java"],"profile":"standard","expect":"COMPLETED","description":"Two classes, Main is the entry point."}
+]
